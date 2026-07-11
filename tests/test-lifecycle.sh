@@ -37,6 +37,12 @@ clean_git -C "$REPO" add .
 clean_git -C "$REPO" commit -m "initial" >/dev/null
 clean_git -C "$REPO" push -u origin main >/dev/null
 
+printf 'if then\n' >"$REPO/.githooks/broken-hook"
+if (cd "$REPO" && ./scripts/loop/verify-fast.sh >/dev/null 2>&1); then
+  fail "verify-fast ignored an invalid extensionless hook"
+fi
+rm "$REPO/.githooks/broken-hook"
+
 if (cd "$REPO" && ./scripts/loop/claim.sh '../2' bad builder-a >/dev/null 2>&1); then
   fail "unsafe Issue claim succeeded"
 fi
@@ -60,17 +66,38 @@ printf 'feature\n' >"$WORKTREE/feature.txt"
 clean_git -C "$WORKTREE" add feature.txt
 clean_git -C "$WORKTREE" commit -m "feat: lifecycle (#2)" >/dev/null
 test -z "$(clean_git -C "$REPO" tag --list)" || fail "commit created an automatic tag"
-if (cd "$WORKTREE" && LOOP_SKIP_INTEGRATION_TESTS=1 ./scripts/loop/checkpoint.sh 2 lifecycle >/dev/null 2>&1); then
+if (cd "$WORKTREE" && ./scripts/loop/checkpoint.sh 2 lifecycle >/dev/null 2>&1); then
   fail "checkpoint accepted an unpushed commit"
 fi
 clean_git -C "$WORKTREE" push -u origin "$BRANCH" >/dev/null
 printf 'dirty\n' >"$WORKTREE/dirty.txt"
-if (cd "$WORKTREE" && LOOP_SKIP_INTEGRATION_TESTS=1 ./scripts/loop/checkpoint.sh 2 lifecycle >/dev/null 2>&1); then
+if (cd "$WORKTREE" && ./scripts/loop/checkpoint.sh 2 lifecycle >/dev/null 2>&1); then
   fail "checkpoint accepted a dirty worktree"
 fi
 rm "$WORKTREE/dirty.txt"
 
-TAG=$(cd "$WORKTREE" && LOOP_SKIP_INTEGRATION_TESTS=1 ./scripts/loop/checkpoint.sh 2 lifecycle)
+mkdir -p "$WORKTREE/tests"
+cat >"$WORKTREE/tests/run.sh" <<'EOF'
+#!/bin/sh
+exit 1
+EOF
+chmod +x "$WORKTREE/tests/run.sh"
+clean_git -C "$WORKTREE" add tests/run.sh
+clean_git -C "$WORKTREE" commit -m "test: add failing fixture (#2)" >/dev/null
+clean_git -C "$WORKTREE" push >/dev/null
+if (cd "$WORKTREE" && LOOP_SKIP_INTEGRATION_TESTS=1 SKIP_TESTS=1 \
+  NO_TESTS=1 CI_SKIP_TESTS=1 ./scripts/loop/checkpoint.sh 2 lifecycle >/dev/null 2>&1); then
+  fail "checkpoint allowed test skip variables to bypass failing tests"
+fi
+cat >"$WORKTREE/tests/run.sh" <<'EOF'
+#!/bin/sh
+exit 0
+EOF
+clean_git -C "$WORKTREE" add tests/run.sh
+clean_git -C "$WORKTREE" commit -m "test: fix fixture (#2)" >/dev/null
+clean_git -C "$WORKTREE" push >/dev/null
+
+TAG=$(cd "$WORKTREE" && ./scripts/loop/checkpoint.sh 2 lifecycle)
 test "$(clean_git -C "$WORKTREE" cat-file -t "$TAG")" = tag || fail "checkpoint is not annotated"
 clean_git --git-dir="$REMOTE" rev-parse "$TAG^{commit}" >/dev/null
 
@@ -85,6 +112,16 @@ fi
 clean_git -C "$REPO" tag lightweight HEAD
 if (cd "$REPO" && ./scripts/loop/restore.sh lightweight >/dev/null 2>&1); then
   fail "restore accepted a lightweight tag"
+fi
+clean_git -C "$REPO" tag -a checkpoint/local-only/test -m local HEAD
+if (cd "$REPO" && ./scripts/loop/restore.sh checkpoint/local-only/test >/dev/null 2>&1); then
+  fail "restore accepted a local-only annotated tag"
+fi
+clean_git -C "$WORKTREE" tag -a checkpoint/mismatch/test -m synced HEAD
+clean_git -C "$WORKTREE" push origin refs/tags/checkpoint/mismatch/test >/dev/null
+clean_git -C "$REPO" tag -f -a checkpoint/mismatch/test -m changed main >/dev/null
+if (cd "$REPO" && ./scripts/loop/restore.sh checkpoint/mismatch/test >/dev/null 2>&1); then
+  fail "restore accepted a tag that differs from origin"
 fi
 
 printf 'SECRET=sk-%s\n' 'abcdefghijklmnopqrstuvwxyz' >"$REPO/.env"
@@ -105,5 +142,10 @@ if printf 'refs/heads/main %s refs/heads/main %s\n' "$zero" "$zero" | \
   (cd "$REPO" && ./.githooks/pre-push origin "$REMOTE" >/dev/null 2>&1); then
   fail "pre-push hook accepted direct main push"
 fi
+for hook in pre-commit pre-push post-checkout post-merge; do
+  if ! (cd "$TMP" && LOOP_HOOKS=0 "$REPO/.githooks/$hook" origin "$REMOTE" </dev/null); then
+    fail "$hook did not honor LOOP_HOOKS=0"
+  fi
+done
 
 printf 'all lifecycle tests passed\n'

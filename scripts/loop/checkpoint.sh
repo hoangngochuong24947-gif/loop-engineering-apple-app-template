@@ -20,7 +20,9 @@ upstream=$(loop_clean_git -C "$root" rev-parse --abbrev-ref --symbolic-full-name
 head=$(loop_clean_git -C "$root" rev-parse HEAD)
 remote_head=$(loop_clean_git -C "$root" rev-parse "$upstream")
 test "$head" = "$remote_head" || { printf 'Current HEAD is not pushed.\n' >&2; exit 1; }
-"$root/scripts/loop/verify-full.sh" >&2
+env -u LOOP_SKIP_INTEGRATION_TESTS -u LOOP_SKIP_TESTS -u SKIP_TESTS \
+  -u NO_TESTS -u CI_SKIP_TESTS -u LOOP_VERIFY_SKIP_TESTS \
+  "$root/scripts/loop/verify-full.sh" >&2
 
 utc=$(date -u '+%Y%m%dT%H%M%SZ')
 short=$(loop_clean_git -C "$root" rev-parse --short HEAD)
