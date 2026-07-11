@@ -1,0 +1,109 @@
+name: Source Prerelease
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prerelease:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out tag history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate immutable release source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          [[ "$tag" == v* ]] || { echo "Release tag must start with v" >&2; exit 1; }
+          git fetch origin main --tags --force
+          [[ "$(git cat-file -t "refs/tags/$tag")" == "tag" ]] || {
+            echo "Release tags must be annotated" >&2
+            exit 1
+          }
+          commit_sha="$(git rev-list -n 1 "$tag")"
+          git merge-base --is-ancestor "$commit_sha" origin/main || {
+            echo "Release commit must be on origin/main" >&2
+            exit 1
+          }
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists; published tags are immutable" >&2
+            exit 1
+          fi
+
+      - name: Build source archive, notes, and checksums
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          commit_sha="$(git rev-list -n 1 "$tag")"
+          repository="${GITHUB_REPOSITORY#*/}"
+          archive="${repository}-${tag}-source.zip"
+          mkdir -p dist
+          git archive \
+            --format=zip \
+            --prefix="${repository}-${tag}/" \
+            --output="dist/$archive" \
+            "$commit_sha"
+
+          custom_notes="docs/releases/${tag}.md"
+          if [[ -f "$custom_notes" ]]; then
+            cat "$custom_notes" > dist/RELEASE_NOTES.md
+          else
+            cat > dist/RELEASE_NOTES.md <<EOF
+          # ${tag}
+
+          Source-only Apple app template prerelease from commit \`${commit_sha}\`.
+          EOF
+          fi
+          cat >> dist/RELEASE_NOTES.md <<EOF
+
+          ## Source evidence
+
+          - Tag: \`${tag}\`
+          - Commit: \`${commit_sha}\`
+          - Archive: \`${archive}\`
+
+          ## Known limitations
+
+          - This automated release publishes source and governance evidence only.
+          - It contains no paid signing, TestFlight, App Store, or notarized artifact.
+          - Product-specific runtime evidence must be linked from custom notes when available.
+
+          ## Rollback reference
+
+          - Revert shared history with \`git revert ${commit_sha}\`.
+          - Inspect this exact state with \`git switch -c restore/${tag} ${commit_sha}\`.
+          - Never move or overwrite the published \`${tag}\` tag.
+          EOF
+          (
+            cd dist
+            shasum -a 256 "$archive" RELEASE_NOTES.md > SHA256SUMS
+          )
+
+      - name: Publish GitHub prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          gh release create "$tag" \
+            --verify-tag \
+            --prerelease \
+            --title "$tag" \
+            --notes-file dist/RELEASE_NOTES.md \
+            dist/*-source.zip \
+            dist/SHA256SUMS \
+            dist/RELEASE_NOTES.md

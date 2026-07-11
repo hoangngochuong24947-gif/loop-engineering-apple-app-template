@@ -1,0 +1,46 @@
+name: Feature slice
+description: Propose one independently testable product outcome.
+title: "[Feature] "
+labels:
+  - type/feature
+body:
+  - type: markdown
+    attributes:
+      value: Keep this Issue to one vertical slice that a fresh Builder can finish and a separate Checker can verify.
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome
+      description: What useful behavior becomes true for the user?
+      placeholder: A person can...
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Vertical scope
+      description: Name the smallest end-to-end path and explicit exclusions.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance
+      description: List observable pass conditions.
+      placeholder: "- [ ] Core workflow persists after relaunch"
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: Commands, runtime proof, accessibility states, and expected artifacts.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and cost
+      description: Note permissions, accounts, paid services, signing, or a free fallback.
+    validations:
+      required: true
