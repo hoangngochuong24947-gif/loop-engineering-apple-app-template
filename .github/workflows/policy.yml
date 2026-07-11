@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  issues: read
   pull-requests: read
 
 concurrency:
@@ -30,19 +31,25 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          pull_count="$(gh api \
+          associated_pulls="$(gh api \
             -H 'Accept: application/vnd.github+json' \
-            "/repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
-            --jq 'length')"
-          if [[ "$pull_count" == "0" ]]; then
-            echo "Direct push to main detected: $GITHUB_SHA has no associated pull request." >&2
+            "/repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls")"
+          merged_match_count="$(jq \
+            --arg sha "$GITHUB_SHA" \
+            '[.[] | select(.state == "closed" and .merged_at != null and .merge_commit_sha == $sha)] | length' \
+            <<<"$associated_pulls")"
+          if [[ "$merged_match_count" == "0" ]]; then
+            echo "Direct push to main detected: $GITHUB_SHA is not the merge_commit_sha of an already merged PR." >&2
             exit 1
           fi
 
       - name: Require linked Issue on pull requests
         if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          python3 - <<'PY'
+          set -euo pipefail
+          issue_number="$(python3 - <<'PY'
           import json
           import os
           import re
@@ -50,9 +57,17 @@ jobs:
 
           event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
           body = event["pull_request"].get("body") or ""
-          if not re.search(r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#\d+\b", body):
+          match = re.search(r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)\b", body)
+          if not match:
               raise SystemExit("PR body must link its Issue with Closes/Fixes/Resolves #<number>")
+          print(match.group(1))
           PY
+          )"
+          issue_json="$(gh api "/repos/$GITHUB_REPOSITORY/issues/$issue_number")"
+          if jq -e 'has("pull_request")' <<<"$issue_json" >/dev/null; then
+            echo "Linked #$issue_number is a pull request, not a repository Issue." >&2
+            exit 1
+          fi
 
       - name: Scan added lines for common secrets
         env:
@@ -64,8 +79,7 @@ jobs:
           if [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
             BASE_SHA="$empty_tree"
           fi
-          git diff --unified=0 "$BASE_SHA" "$HEAD_SHA" -- . \
-            ':(exclude).github/workflows/policy.yml' > /tmp/added-lines.diff
+          git diff --unified=0 "$BASE_SHA" "$HEAD_SHA" -- . > /tmp/added-lines.diff
           python3 - <<'PY'
           import re
           from pathlib import Path
@@ -91,4 +105,13 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_repository_governance.py'
 
       - name: Check patch whitespace
-        run: git diff --check
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          empty_tree="$(git hash-object -t tree /dev/null)"
+          if [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            BASE_SHA="$empty_tree"
+          fi
+          git diff --check "$BASE_SHA" "$HEAD_SHA"

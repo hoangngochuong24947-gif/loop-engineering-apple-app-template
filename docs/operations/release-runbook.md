@@ -5,6 +5,37 @@ annotated `v*` tag. The workflow uses free public GitHub runners and the
 repository-scoped `GITHUB_TOKEN`. It does not require Apple credentials, paid
 signing, TestFlight, notarization, or third-party release secrets.
 
+## Apply repository rulesets
+
+GitHub rulesets are the authoritative guard. Workflows report violations after
+an event starts; they cannot replace a server-side refusal.
+
+```bash
+./scripts/apply-rulesets.sh OWNER/REPOSITORY
+gh api repos/OWNER/REPOSITORY/rulesets \
+  --jq '.[] | {id, name, target, enforcement}'
+```
+
+The script creates or updates the versioned definitions in `.github/rulesets/`:
+
+- `main.json` requires a pull request plus the `policy` and `verify` checks, and
+  blocks deletion and non-fast-forward updates of the default branch.
+- `tags-v.json` blocks updates and deletion for `refs/tags/v*`.
+
+Run the script once after creating a repository and again whenever the JSON
+definitions change. It uses the current `gh` authentication; do not store an
+admin token in the repository or a workflow. The release workflow's tag checks
+are a second layer, not the immutability boundary.
+
+Application evidence for the public source template on 2026-07-11:
+
+- Repository: `hoangngochuong24947-gif/loop-engineering-apple-app-template`
+- Main ruleset: `18800528`, active
+- `v*` tag ruleset: `18800529`, active
+
+Re-query these IDs with `gh api repos/OWNER/REPOSITORY/rulesets/<id>` rather
+than assuming the local JSON alone proves remote enforcement.
+
 ## Release gate
 
 Release only after all of the following are true:

@@ -19,6 +19,13 @@ body:
     validations:
       required: true
   - type: textarea
+    id: scope
+    attributes:
+      label: Scope and exclusions
+      description: Name the affected workflow and what this fix must not change.
+    validations:
+      required: true
+  - type: textarea
     id: evidence
     attributes:
       label: Evidence
@@ -48,5 +55,12 @@ body:
         - Read-only incorrect behavior
         - Possible data loss or corruption
         - Security or privacy exposure
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and cost
+      description: Note permissions, accounts, services, signing, or paid boundaries and the available fallback.
     validations:
       required: true

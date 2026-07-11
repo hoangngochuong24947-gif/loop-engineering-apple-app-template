@@ -34,7 +34,12 @@ jobs:
           set -euo pipefail
           if [[ -f project.yml ]]; then
             xcodegen generate
-            git diff --exit-code -- project.yml '*.xcodeproj/**'
+            drift="$(git status --porcelain=v1 --untracked-files=all)"
+            if [[ -n "$drift" ]]; then
+              echo "XcodeGen project drift detected:" >&2
+              printf '%s\n' "$drift" >&2
+              exit 1
+            fi
           else
             echo "project.yml is not present in this governance-only checkout; project drift check is deferred."
           fi
@@ -60,11 +65,8 @@ jobs:
           set -euo pipefail
           if [[ -f scripts/loop/verify-focused.sh ]]; then
             bash scripts/loop/verify-focused.sh
-            exit 0
-          fi
-          if [[ -f scripts/verify.sh ]]; then
+          elif [[ -f scripts/verify.sh ]]; then
             bash scripts/verify.sh
-            exit 0
           fi
 
           found_build_target=false
