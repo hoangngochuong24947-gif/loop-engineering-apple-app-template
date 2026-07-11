@@ -1,0 +1,48 @@
+name: Operations or release change
+description: Change repository policy, CI, release, rollback, or shared tooling.
+title: "[Operations] "
+labels:
+  - type/ops
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome
+      description: What repository or release capability becomes reliable?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and exclusions
+      description: Identify affected workflows and machinery that must remain unchanged.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance
+      description: List policy, artifact, and rollback requirements.
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: Include static lint, dry runs, Actions evidence, and failure-path checks.
+    validations:
+      required: true
+  - type: textarea
+    id: rollback
+    attributes:
+      label: Rollback
+      description: Explain how to revert shared history or inspect the prior state without rewriting history.
+    validations:
+      required: true
+  - type: textarea
+    id: cost
+    attributes:
+      label: Accounts, secrets, and cost
+      description: Confirm the free path or identify the exact user/payment boundary.
+    validations:
+      required: true

@@ -1,0 +1,52 @@
+name: Bug report
+description: Capture a reproducible failure before changing code.
+title: "[Bug] "
+labels:
+  - type/bug
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome
+      description: What working behavior must be restored?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Give the shortest deterministic steps, environment, and observed result.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Attach logs, screenshots, failing commands, and the first known bad SHA when available.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance
+      description: State the regression behavior and important edge cases.
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: Name the regression test and real runtime proof.
+    validations:
+      required: true
+  - type: dropdown
+    id: data_risk
+    attributes:
+      label: User-data risk
+      options:
+        - None known
+        - Read-only incorrect behavior
+        - Possible data loss or corruption
+        - Security or privacy exposure
+    validations:
+      required: true
