@@ -1,0 +1,6 @@
+#!/bin/sh
+[ "${LOOP_HOOKS:-1}" = 0 ] && exit 0
+set -eu
+root=$(git rev-parse --show-toplevel)
+"$root/scripts/loop/policy-check.sh" direct-main
+"$root/scripts/loop/verify-fast.sh"

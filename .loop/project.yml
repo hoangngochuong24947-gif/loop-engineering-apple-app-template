@@ -1,0 +1,18 @@
+schema_version: 1
+
+git:
+  default_branch: main
+  branch_pattern: agent/{issue}-{slug}
+  worktree_root: ../.worktrees/{repo}
+  forbid_direct_main_work: true
+  automatic_per_commit_tags: false
+
+verification:
+  fast: ./scripts/loop/verify-fast.sh
+  focused: ./scripts/loop/verify-focused.sh
+  full: ./scripts/loop/verify-full.sh
+
+rollback:
+  checkpoint_pattern: checkpoint/{issue}-{slug}/{utc}-{short_sha}
+  annotated_tags_only: true
+  restore_into_isolated_worktree: true
