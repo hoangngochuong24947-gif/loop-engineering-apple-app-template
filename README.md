@@ -1,8 +1,24 @@
 # Loop Engineering Apple App Template
 
-Lean local governance for one Apple app repository. It keeps `main` stable,
-gives each Builder one Issue worktree, records explicit verified checkpoints,
-and restores immutable tags without changing the active checkout.
+This public template combines a useful iOS 18+ local QuickNote app with lean
+Loop Engineering governance. The app captures, lists, completes, and
+soft-deletes notes with Undo and JSON persistence. Its App Shortcut can capture
+a note without opening the app. The core has no account, ads, analytics,
+network dependency, or collected data.
+
+Generate and verify the Apple project:
+
+```sh
+xcodegen generate
+xcodebuild test -project QuickNote.xcodeproj -scheme QuickNote \
+  -destination 'platform=iOS Simulator,name=iPhone 17' CODE_SIGNING_ALLOWED=NO
+./scripts/verify-bundle-resources.sh \
+  ~/Library/Developer/Xcode/DerivedData/QuickNote-*/Build/Products/Debug-iphonesimulator/QuickNote.app
+```
+
+The lifecycle keeps `main` stable, gives each Builder one Issue worktree,
+records explicit verified checkpoints, and restores immutable tags without
+changing the active checkout:
 
 ```bash
 ./scripts/loop/bootstrap.sh
