@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+root=$(git rev-parse --show-toplevel)
+while read -r local_ref local_sha remote_ref remote_sha; do
+  test "$remote_ref" != refs/heads/main || {
+    printf 'Direct pushes to main are forbidden.\n' >&2
+    exit 1
+  }
+done
+"$root/scripts/loop/verify-full.sh"

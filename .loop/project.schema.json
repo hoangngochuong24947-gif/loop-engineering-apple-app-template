@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Loop Engineering Apple App Project",
+  "type": "object",
+  "required": ["schema_version", "git", "verification", "rollback"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "git": {
+      "type": "object",
+      "required": ["default_branch", "branch_pattern", "worktree_root"],
+      "properties": {
+        "default_branch": {"type": "string", "minLength": 1},
+        "branch_pattern": {"const": "agent/{issue}-{slug}"},
+        "worktree_root": {"const": "../.worktrees/{repo}"},
+        "forbid_direct_main_work": {"const": true},
+        "automatic_per_commit_tags": {"const": false}
+      }
+    },
+    "verification": {"type": "object"},
+    "rollback": {
+      "type": "object",
+      "required": ["annotated_tags_only", "restore_into_isolated_worktree"],
+      "properties": {
+        "annotated_tags_only": {"const": true},
+        "restore_into_isolated_worktree": {"const": true}
+      }
+    }
+  }
+}
