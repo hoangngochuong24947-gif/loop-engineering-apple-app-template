@@ -12,6 +12,8 @@ Generate and verify the Apple project:
 xcodegen generate
 xcodebuild test -project QuickNote.xcodeproj -scheme QuickNote \
   -destination 'platform=iOS Simulator,name=iPhone 17' CODE_SIGNING_ALLOWED=NO
+./scripts/verify-bundle-resources.sh \
+  ~/Library/Developer/Xcode/DerivedData/QuickNote-*/Build/Products/Debug-iphonesimulator/QuickNote.app
 ```
 
 The lifecycle keeps `main` stable, gives each Builder one Issue worktree,

@@ -8,8 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		10B8187525727B8BF96ADF0C /* AddNoteIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2C080961E66D36D3CA1EF88 /* AddNoteIntent.swift */; };
+		300ED69A2A210168388B109A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1607FED06AD10BB12C9AC07A /* PrivacyInfo.xcprivacy */; };
 		3AE33CBAD8F8B38BF01AACF5 /* NotesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCB089EB15899F8A28AB5310 /* NotesModel.swift */; };
 		4A95D7341E47AB18A0FCF183 /* NotesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 668585EE394BCA843C156A30 /* NotesScreen.swift */; };
+		6592270796200E1F23782D32 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0AC461DB72F5B6809991214B /* Assets.xcassets */; };
 		7738A4D70EB4981F893172B5 /* NoteRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6D75A39770979DA41A20908 /* NoteRepositoryTests.swift */; };
 		78DD8A13981CCEDE02EA5679 /* NoteRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A06A743F91A944F824C65B5 /* NoteRepository.swift */; };
 		92B0B905E5589D2DCD11F932 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = E56D0F0493019E8BACB380CE /* Note.swift */; };
@@ -27,6 +29,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0AC461DB72F5B6809991214B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1607FED06AD10BB12C9AC07A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		5A06A743F91A944F824C65B5 /* NoteRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteRepository.swift; sourceTree = "<group>"; };
 		668585EE394BCA843C156A30 /* NotesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesScreen.swift; sourceTree = "<group>"; };
 		6711C192787242FC1D764606 /* QuickNoteTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = QuickNoteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -73,6 +77,15 @@
 			path = Domain;
 			sourceTree = "<group>";
 		};
+		7950BF9052B3843518275E43 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0AC461DB72F5B6809991214B /* Assets.xcassets */,
+				1607FED06AD10BB12C9AC07A /* PrivacyInfo.xcprivacy */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		B32096CF38293B903ACD5586 /* Features */ = {
 			isa = PBXGroup;
 			children = (
@@ -104,6 +117,7 @@
 		E1F28972ED15FC0E8A42677F = {
 			isa = PBXGroup;
 			children = (
+				7950BF9052B3843518275E43 /* Resources */,
 				B33C2451D96CF74B74CE393E /* Sources */,
 				4C439E61BABAA3D6FE0F8060 /* Tests */,
 				36F6B0B2BB200036EC556C27 /* Products */,
@@ -118,6 +132,7 @@
 			buildConfigurationList = 41E2FB8E811AC42C7164560E /* Build configuration list for PBXNativeTarget "QuickNote" */;
 			buildPhases = (
 				DA64DC3EC6782A417C823759 /* Sources */,
+				54AE5B905769DF9A726D33DD /* Resources */,
 			);
 			buildRules = (
 			);
@@ -184,6 +199,18 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		54AE5B905769DF9A726D33DD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6592270796200E1F23782D32 /* Assets.xcassets in Resources */,
+				300ED69A2A210168388B109A /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		1ADA0C5C5723594D15877A45 /* Sources */ = {
@@ -281,6 +308,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -300,6 +328,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;

@@ -77,24 +77,27 @@ private struct NoteRow: View {
     let toggle: () -> Void
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Button(action: toggle) {
+        Button(action: toggle) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Image(systemName: note.isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
                     .foregroundStyle(note.isCompleted ? Color.green : Color.secondary)
-            }
-            .buttonStyle(.plain)
-            .frame(minWidth: 44, minHeight: 44)
-            .accessibilityLabel(note.isCompleted ? "Mark incomplete" : "Mark complete")
+                    .frame(minWidth: 44, minHeight: 44)
 
-            Text(note.text)
-                .foregroundStyle(note.isCompleted ? .secondary : .primary)
-                .strikethrough(note.isCompleted)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .fixedSize(horizontal: false, vertical: true)
+                Text(note.text)
+                    .foregroundStyle(note.isCompleted ? .secondary : .primary)
+                    .strikethrough(note.isCompleted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .contentShape(.rect)
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(note.text), \(note.isCompleted ? "completed" : "not completed")")
+        .buttonStyle(.plain)
+        .accessibilityRepresentation {
+            Button(note.text, action: toggle)
+                .accessibilityValue(note.isCompleted ? "Completed" : "Not completed")
+                .accessibilityHint(note.isCompleted ? "Double tap to mark incomplete" : "Double tap to mark complete")
+        }
     }
 }
 
